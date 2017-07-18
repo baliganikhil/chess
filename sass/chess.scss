@@ -1,0 +1,93 @@
+$white_square: #D8B898;
+$black_square: #A88048;
+
+$chess_piece_font_url: "/fonts/cases/CASEFONT.TTF";
+
+$chess_square_dimen: 60px;
+
+@font-face {
+    font-family: chess;
+    src: url($chess_piece_font_url);
+}
+
+.chess_row {
+    clear: both;
+}
+
+.chess_square {
+    border: solid 1px #eee;
+    height: $chess_square_dimen;
+    width: $chess_square_dimen;
+    display: inline-block;
+    text-align: center;
+    float: left;
+}
+
+.chess_square.white {
+    background: $white_square;
+}
+
+.chess_square.black {
+    background: $black_square;
+}
+
+.chess_piece {
+    font-family: "chess";
+    font-size: 40px;
+    display: inline-block;
+    margin-top: 8px;
+}
+
+.white_pawn:before {
+    content: "p";
+}
+
+.black_pawn:before {
+    content: "o";
+}
+
+.white_knight:before {
+    content: "n";
+}
+
+.black_knight:before {
+    content: "m";
+}
+
+.white_bishop:before {
+    content: "b";
+}
+
+.black_bishop:before {
+    content: "v";
+}
+
+.white_rook:before {
+    content: "r";
+}
+
+.black_rook:before {
+    content: "t";
+}
+
+.white_queen:before {
+    content: "q";
+}
+
+.black_queen:before {
+    content: "w";
+}
+
+.white_king:before {
+    content: "k";
+}
+
+.black_king:before {
+    content: "l";
+}
+
+.allowed_position {
+    opacity: 0.65;
+    // background: #D2F5E1 !important;
+    // border: solid 1px #333;
+}
