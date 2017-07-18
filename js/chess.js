@@ -25,7 +25,8 @@ DEBUG = {
 };
 
 STATE = {
-    is_piece_moving: false
+    is_piece_moving: false,
+    cur_colour: CONSTANTS.COLOURS.WHITE
 };
 
 /**
@@ -45,6 +46,17 @@ function piece_factory(piece_type, colour) {
                     '</span>'
                 ].join('')
             );
+}
+
+function init_game() {
+    (function init_listeners() {
+        // New Game
+        $('.new_game').on('click', function () {
+            init_board();
+        });
+    })();
+    
+    init_board();
 }
 
 /**
@@ -221,13 +233,13 @@ function init_pieces() {
  * @param {any} piece 
  */
 function make_piece_draggable(piece) {
-    DEBUG.log('Making draggable: ', $(piece).data('piece_type'));
-
     $(piece).on('mouseover', function () {
+        if (STATE.is_piece_moving) { return false; }
+
         var piece_type = $(piece).data('piece_type'),
             row_index = parseInt($(piece).closest('.chess_square').data('row_index')),
             col_index = parseInt($(piece).closest('.chess_square').data('col_index'));
-
+        
         switch(piece_type) {
             case CONSTANTS.PIECES.PAWN:
                 make_pawn_draggable(piece, row_index, col_index);
@@ -256,7 +268,17 @@ function make_piece_draggable(piece) {
     });
 
     $(piece).on('mouseout', function () {
+        if (STATE.is_piece_moving) { return false; }
+
         remove_all_droppable();
+    });
+
+    $(piece).on('mousedown', function () {
+        STATE.is_piece_moving = true;
+    });
+
+    $(piece).on('mouseup mouseleave', function () {
+        STATE.is_piece_moving = false;
     });
 
     /**
@@ -402,14 +424,38 @@ function make_piece_draggable(piece) {
      * @param {any} piece 
      */
     function set_allowed_positions(allowed_positions, piece) {
+        var target_position,
+            existing_chess_piece;
+        
+        /**
+         * Check if the current piece is the same colour
+         * If it is the same, we do not set any allowed positions
+         */
+        if ($(piece).data('colour') !== STATE.cur_colour) {
+            return false;
+        }
+
         allowed_positions.forEach(function (allowed_position) {
-            $('[data-row_index="' + allowed_position[0] + '"][data-col_index="' + allowed_position[1] + '"]').
+            target_position = '[data-row_index="' + allowed_position[0] + '"][data-col_index="' + allowed_position[1] + '"]';
+
+            /* 
+                Check if the allowed position has a piece of the same colour 
+            */
+            existing_chess_piece = $(target_position).find('.chess_piece');
+            if (!noe(existing_chess_piece) && $(existing_chess_piece).data('colour') === STATE.cur_colour) {
+                return true;
+            }
+
+            // Set allowed position
+            $(target_position).
                 droppable({
                     activeClass: 'allowed_position',
                     drop: function (event, ui) {
                         var new_piece = clone_piece($(ui.draggable));
                         $(ui.draggable).remove();
                         $(this).append(new_piece);
+
+                        STATE.cur_colour = STATE.cur_colour === CONSTANTS.COLOURS.WHITE ? CONSTANTS.COLOURS.BLACK : CONSTANTS.COLOURS.WHITE;
                     }
                 });
         });
@@ -467,4 +513,4 @@ function noe(i) {
     return [undefined, null, ''].indexOf(i) > -1;
 }
 
-init_board();
+init_game();

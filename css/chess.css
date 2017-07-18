@@ -63,4 +63,14 @@
 .allowed_position {
   opacity: 0.65; }
 
+.toolbar {
+  margin-bottom: 12px; }
+  .toolbar .new_game {
+    border: solid 1px #ddd;
+    background: #fff;
+    padding: 7px 10px;
+    color: #444;
+    outline: none;
+    cursor: pointer; }
+
 /*# sourceMappingURL=chess.css.map */

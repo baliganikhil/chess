@@ -91,3 +91,16 @@ $chess_square_dimen: 60px;
     // background: #D2F5E1 !important;
     // border: solid 1px #333;
 }
+
+.toolbar {
+    margin-bottom: 12px;
+
+    .new_game {
+        border: solid 1px #ddd;
+        background: #fff;
+        padding: 7px 10px;
+        color: #444;
+        outline: none;
+        cursor: pointer;
+    }
+}
