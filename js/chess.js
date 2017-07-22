@@ -40,8 +40,14 @@ STATE = {
     },
 
     add_captured_piece: function (colour, piece_type) {
+        var container = '.pieces_lost .' + colour;
+
+        if (STATE.captured[colour].length === 0) {
+            $(container).find('.lbl_no_pieces_lost').hide();
+        }
+
         STATE.captured[colour].push(piece_type);
-        $('.pieces_lost .' + colour).append(piece_factory(piece_type, colour));
+        $(container).append(piece_factory(piece_type, colour));
     },
 
     clear_states: function () {
@@ -214,6 +220,9 @@ function init_board() {
     draw_board();
     init_pieces();
     STATE.clear_states();
+
+    $('.pieces_lost .chess_piece').remove();
+    $('.lbl_no_pieces_lost').show();
 }
 
 /**
@@ -690,14 +699,15 @@ function get_vertical_allowed_positions(piece, row_index, col_index) {
             down: true,
             left: true,
             right: true
-        };
-
+        },
+        colour_of_cur_piece = PIECE.get_piece_colour(piece);
+    
     for (i = 1; i < 8; i++) {
         if (can_go.up) {
             colour_at_position = SQUARE.has_piece_at(row_index - i, col_index);
 
             // If the piece at the position is same colour as current piece
-            if (colour_at_position === STATE.cur_colour) {
+            if (colour_at_position === colour_of_cur_piece) {
                 can_go.up = false;
             } else {
                 // If the piece at the position is opposite colour as current piece
@@ -713,7 +723,7 @@ function get_vertical_allowed_positions(piece, row_index, col_index) {
             colour_at_position = SQUARE.has_piece_at(row_index + i, col_index);
             
             // If the piece at the position is same colour as current piece
-            if (colour_at_position === STATE.cur_colour) {
+            if (colour_at_position === colour_of_cur_piece) {
                 can_go.down = false;
             } else {
                 // If the piece at the position is opposite colour as current piece
@@ -730,7 +740,7 @@ function get_vertical_allowed_positions(piece, row_index, col_index) {
             colour_at_position = SQUARE.has_piece_at(row_index, col_index - i);
             
             // If the piece at the position is same colour as current piece
-            if (colour_at_position === STATE.cur_colour) {
+            if (colour_at_position === colour_of_cur_piece) {
                 can_go.left = false;
             } else {
                 // If the piece at the position is opposite colour as current piece
@@ -746,7 +756,7 @@ function get_vertical_allowed_positions(piece, row_index, col_index) {
             colour_at_position = SQUARE.has_piece_at(row_index, col_index + i);
             
             // If the piece at the position is same colour as current piece
-            if (colour_at_position === STATE.cur_colour) {
+            if (colour_at_position === colour_of_cur_piece) {
                 can_go.right = false;
             } else {
                 // If the piece at the position is opposite colour as current piece
@@ -781,14 +791,15 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
             down: true,
             left: true,
             right: true
-        };
+        },
+        colour_of_cur_piece = PIECE.get_piece_colour(piece);;
 
     for (i = 1; i < 8; i++) {
         if (can_go.up) {
             colour_at_position = SQUARE.has_piece_at(row_index - i, col_index - i);
 
             // If the piece at the position is same colour as current piece
-            if (colour_at_position === STATE.cur_colour) {
+            if (colour_at_position === colour_of_cur_piece) {
                 can_go.up = false;
             } else {
                 // If the piece at the position is opposite colour as current piece
@@ -804,7 +815,7 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
             colour_at_position = SQUARE.has_piece_at(row_index + i, col_index + i);
             
             // If the piece at the position is same colour as current piece
-            if (colour_at_position === STATE.cur_colour) {
+            if (colour_at_position === colour_of_cur_piece) {
                 can_go.down = false;
             } else {
                 // If the piece at the position is opposite colour as current piece
@@ -820,7 +831,7 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
             colour_at_position = SQUARE.has_piece_at(row_index - i, col_index + i);
             
             // If the piece at the position is same colour as current piece
-            if (colour_at_position === STATE.cur_colour) {
+            if (colour_at_position === colour_of_cur_piece) {
                 can_go.left = false;
             } else {
                 // If the piece at the position is opposite colour as current piece
@@ -836,7 +847,7 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
             colour_at_position = SQUARE.has_piece_at(row_index + i, col_index - i);
             
             // If the piece at the position is same colour as current piece
-            if (colour_at_position === STATE.cur_colour) {
+            if (colour_at_position === colour_of_cur_piece) {
                 can_go.right = false;
             } else {
                 // If the piece at the position is opposite colour as current piece
@@ -852,31 +863,105 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
     return allowed_positions;
 }
 
-function is_king_under_check(colour, row_index, col_index) {
+/**
+ * Checks if the king of the colour is under check
+ * 
+ * @param {any} colour 
+ * @returns 
+ */
+function is_king_under_check(colour) {
     var king_piece = SQUARE.get_piece_at(row_index, col_index),
+        king_square = $('#chess_board').
+                        find('.chess_piece[data-piece_type="king"][data-colour="' + colour + '"]').
+                        closest('.chess_square'),
+        row_index = parseInt($(king_square).data('row_index')),
+        col_index = parseInt($(king_square).data('col_index')),
         vertical_positions,
         diagonal_positions,
-        piece,
+        knight_squares,
+        king_squares,
+        piece = SQUARE.get_piece_at(row_index, col_index),
         piece_type,
+        colour_at_position,
         under_check = false;
     
     vertical_positions = get_vertical_allowed_positions(piece, row_index, col_index);
     diagonal_positions = get_diagonal_allowed_positions(piece, row_index, col_index);
 
+    // Vertical threats - Rook and Queen
     vertical_positions.forEach(function (v_pos) {
         piece = SQUARE.get_piece_at(v_pos[0], v_pos[1]);
         piece_type = PIECE.get_piece_type(piece);
 
-        if (piece_type === CONSTANTS.PIECES.ROOK || piece_type === CONSTANTS.PIECES.QUEEN) {
+        if (colour !== PIECE.get_piece_colour(piece) && (piece_type === CONSTANTS.PIECES.ROOK || piece_type === CONSTANTS.PIECES.QUEEN)) {
             under_check = true;
         }
     });
 
+    // Diagonal threats - Bishop and Queen
     diagonal_positions.forEach(function (d_pos) {
         piece = SQUARE.get_piece_at(d_pos[0], d_pos[1]);
         piece_type = PIECE.get_piece_type(piece);
 
-        if (piece_type === CONSTANTS.PIECES.BISHOP || piece_type === CONSTANTS.PIECES.QUEEN) {
+        if (colour !== PIECE.get_piece_colour(piece) && (piece_type === CONSTANTS.PIECES.BISHOP || piece_type === CONSTANTS.PIECES.QUEEN)) {
+            under_check = true;
+        }
+    });
+
+    // Pawn threats
+    if (colour === CONSTANTS.COLOURS.WHITE) {
+        piece = SQUARE.get_piece_at(row_index - 1, col_index - 1);
+        if (PIECE.get_piece_type(piece) === CONSTANTS.PIECES.PAWN && colour !== PIECE.get_piece_colour(piece)) {
+            under_check = true;
+        }
+
+        piece = SQUARE.get_piece_at(row_index - 1, col_index + 1);
+        if (PIECE.get_piece_type(piece) === CONSTANTS.PIECES.PAWN && colour !== PIECE.get_piece_colour(piece)) {
+            under_check = true;
+        }
+    } else if (colour === CONSTANTS.COLOURS.BLACK) {
+        piece = SQUARE.get_piece_at(row_index + 1, col_index - 1);
+        if (PIECE.get_piece_type(piece) === CONSTANTS.PIECES.PAWN && colour !== PIECE.get_piece_colour(piece)) {
+            under_check = true;
+        }
+
+        piece = SQUARE.get_piece_at(row_index + 1, col_index + 1);
+        if (PIECE.get_piece_type(piece) === CONSTANTS.PIECES.PAWN && colour !== PIECE.get_piece_colour(piece)) {
+            under_check = true;
+        }
+    }
+
+    // Knight threats
+    knight_squares = [
+        [row_index - 2, col_index - 1], [row_index - 2, col_index + 1],
+        [row_index - 1, col_index - 2], [row_index - 1, col_index + 2],
+        [row_index + 2, col_index - 1], [row_index + 2, col_index + 1],
+        [row_index + 1, col_index - 2], [row_index + 1, col_index + 2]
+    ];
+
+    knight_squares.forEach(function (knight_square) {
+        piece = SQUARE.get_piece_at(knight_square[0], knight_square[1]);
+        piece_type = PIECE.get_piece_type(piece);
+        colour_at_position = PIECE.get_piece_colour(piece);
+
+        if (piece_type === CONSTANTS.PIECES.KNIGHT && colour_at_position !== colour) {
+            under_check = true;
+        }
+    });
+
+    // King threats
+    king_squares = [
+        [row_index - 1, col_index - 1], [row_index - 1, col_index], [row_index - 1, col_index + 1],
+        [row_index, col_index - 1], [row_index, col_index + 1],
+        [row_index + 1, col_index - 1], [row_index + 1, col_index], [row_index + 1, col_index + 1],
+    ];
+
+    king_squares.forEach(function (king_square) {
+        piece = SQUARE.get_piece_at(king_square[0], king_square[1]);
+        piece_type = PIECE.get_piece_type(piece);
+        colour_at_position = PIECE.get_piece_colour(piece);
+
+        if (piece_type === CONSTANTS.PIECES.KING && colour_at_position !== colour) {
             under_check = true;
         }
     });
