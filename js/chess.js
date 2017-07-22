@@ -685,15 +685,14 @@ function get_vertical_allowed_positions(piece, row_index, col_index) {
             // If the piece at the position is same colour as current piece
             if (colour_at_position === STATE.cur_colour) {
                 can_go.up = false;
-                continue;
-            }
+            } else {
+                // If the piece at the position is opposite colour as current piece
+                if (!noe(colour_at_position)) {
+                    can_go.up = false;
+                }
 
-            // If the piece at the position is opposite colour as current piece
-            if (!noe(colour_at_position)) {
-                can_go.up = false;
+                allowed_positions.push([row_index - i, col_index]);
             }
-
-            allowed_positions.push([row_index - i, col_index]);
         }
 
         if (can_go.down) {
@@ -702,15 +701,15 @@ function get_vertical_allowed_positions(piece, row_index, col_index) {
             // If the piece at the position is same colour as current piece
             if (colour_at_position === STATE.cur_colour) {
                 can_go.down = false;
-                continue;
+            } else {
+                // If the piece at the position is opposite colour as current piece
+                if (!noe(colour_at_position)) {
+                    can_go.down = false;
+                }
+
+                allowed_positions.push([row_index + i, col_index]);                
             }
 
-            // If the piece at the position is opposite colour as current piece
-            if (!noe(colour_at_position)) {
-                can_go.down = false;
-            }
-
-            allowed_positions.push([row_index + i, col_index]);
         }
 
         if (can_go.left) {
@@ -719,15 +718,14 @@ function get_vertical_allowed_positions(piece, row_index, col_index) {
             // If the piece at the position is same colour as current piece
             if (colour_at_position === STATE.cur_colour) {
                 can_go.left = false;
-                continue;
-            }
+            } else {
+                // If the piece at the position is opposite colour as current piece
+                if (!noe(colour_at_position)) {
+                    can_go.left = false;
+                }
 
-            // If the piece at the position is opposite colour as current piece
-            if (!noe(colour_at_position)) {
-                can_go.left = false;
+                allowed_positions.push([row_index, col_index - i]);
             }
-
-            allowed_positions.push([row_index, col_index - i]);
         }
 
         if (can_go.right) {
@@ -736,15 +734,14 @@ function get_vertical_allowed_positions(piece, row_index, col_index) {
             // If the piece at the position is same colour as current piece
             if (colour_at_position === STATE.cur_colour) {
                 can_go.right = false;
-                continue;
-            }
+            } else {
+                // If the piece at the position is opposite colour as current piece
+                if (!noe(colour_at_position)) {
+                    can_go.right = false;
+                }
 
-            // If the piece at the position is opposite colour as current piece
-            if (!noe(colour_at_position)) {
-                can_go.right = false;
+                allowed_positions.push([row_index, col_index + i]);
             }
-
-            allowed_positions.push([row_index, col_index + i]);
         }
 
     }
@@ -779,15 +776,14 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
             // If the piece at the position is same colour as current piece
             if (colour_at_position === STATE.cur_colour) {
                 can_go.up = false;
-                continue;
-            }
+            } else {
+                // If the piece at the position is opposite colour as current piece
+                if (!noe(colour_at_position)) {
+                    can_go.up = false;
+                }
 
-            // If the piece at the position is opposite colour as current piece
-            if (!noe(colour_at_position)) {
-                can_go.up = false;
+                allowed_positions.push([row_index - i, col_index - i]);
             }
-
-            allowed_positions.push([row_index - i, col_index - i]);
         }
 
         if (can_go.down) {
@@ -796,15 +792,14 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
             // If the piece at the position is same colour as current piece
             if (colour_at_position === STATE.cur_colour) {
                 can_go.down = false;
-                continue;
-            }
+            } else {
+                // If the piece at the position is opposite colour as current piece
+                if (!noe(colour_at_position)) {
+                    can_go.down = false;
+                }
 
-            // If the piece at the position is opposite colour as current piece
-            if (!noe(colour_at_position)) {
-                can_go.down = false;
+                allowed_positions.push([row_index + i, col_index + i]);
             }
-
-            allowed_positions.push([row_index + i, col_index + i]);
         }
 
         if (can_go.left) {
@@ -813,15 +808,14 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
             // If the piece at the position is same colour as current piece
             if (colour_at_position === STATE.cur_colour) {
                 can_go.left = false;
-                continue;
-            }
+            } else {
+                // If the piece at the position is opposite colour as current piece
+                if (!noe(colour_at_position)) {
+                    can_go.left = false;
+                }
 
-            // If the piece at the position is opposite colour as current piece
-            if (!noe(colour_at_position)) {
-                can_go.left = false;
+                allowed_positions.push([row_index - i, col_index + i]);
             }
-
-            allowed_positions.push([row_index - i, col_index + i]);
         }
 
         if (can_go.right) {
@@ -830,17 +824,15 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
             // If the piece at the position is same colour as current piece
             if (colour_at_position === STATE.cur_colour) {
                 can_go.right = false;
-                continue;
-            }
+            } else {
+                // If the piece at the position is opposite colour as current piece
+                if (!noe(colour_at_position)) {
+                    can_go.right = false;
+                }
 
-            // If the piece at the position is opposite colour as current piece
-            if (!noe(colour_at_position)) {
-                can_go.right = false;
+                allowed_positions.push([row_index + i, col_index - i]);
             }
-
-            allowed_positions.push([row_index + i, col_index - i]);
         }
-
     }
 
     return allowed_positions;
