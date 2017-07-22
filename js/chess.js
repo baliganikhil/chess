@@ -295,71 +295,71 @@ function init_pieces() {
 
     // Init Kings
     piece = piece_factory(CONSTANTS.PIECES.KING, CONSTANTS.COLOURS.WHITE);
-    $('[data-row_index="' + white_king_index[0] + '"][data-col_index="' + white_king_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(white_king_index[0], white_king_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.KING, CONSTANTS.COLOURS.BLACK);
-    $('[data-row_index="' + black_king_index[0] + '"][data-col_index="' + black_king_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(black_king_index[0], black_king_index[1])).append(piece);
     make_piece_draggable(piece);
 
     // Init Queens
     piece = piece_factory(CONSTANTS.PIECES.QUEEN, CONSTANTS.COLOURS.WHITE);
-    $('[data-row_index="' + white_queen_index[0] + '"][data-col_index="' + white_queen_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(white_queen_index[0], white_queen_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.QUEEN, CONSTANTS.COLOURS.BLACK);
-    $('[data-row_index="' + black_queen_index[0] + '"][data-col_index="' + black_queen_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(black_queen_index[0], black_queen_index[1])).append(piece);
     make_piece_draggable(piece);
 
     // Init Bishops
     piece = piece_factory(CONSTANTS.PIECES.BISHOP, CONSTANTS.COLOURS.WHITE);
-    $('[data-row_index="' + white_bishop_1_index[0] + '"][data-col_index="' + white_bishop_1_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(white_bishop_1_index[0], white_bishop_1_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.BISHOP, CONSTANTS.COLOURS.BLACK);
-    $('[data-row_index="' + black_bishop_1_index[0] + '"][data-col_index="' + black_bishop_1_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(black_bishop_1_index[0], black_bishop_1_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.BISHOP, CONSTANTS.COLOURS.WHITE);
-    $('[data-row_index="' + white_bishop_2_index[0] + '"][data-col_index="' + white_bishop_2_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(white_bishop_2_index[0], white_bishop_2_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.BISHOP, CONSTANTS.COLOURS.BLACK);
-    $('[data-row_index="' + black_bishop_2_index[0] + '"][data-col_index="' + black_bishop_2_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(black_bishop_2_index[0], black_bishop_2_index[1])).append(piece);
     make_piece_draggable(piece);
 
     // Init Knights
     piece = piece_factory(CONSTANTS.PIECES.KNIGHT, CONSTANTS.COLOURS.WHITE);
-    $('[data-row_index="' + white_knight_1_index[0] + '"][data-col_index="' + white_knight_1_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(white_knight_1_index[0], white_knight_1_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.KNIGHT, CONSTANTS.COLOURS.BLACK);
-    $('[data-row_index="' + black_knight_1_index[0] + '"][data-col_index="' + black_knight_1_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(black_knight_1_index[0], black_knight_1_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.KNIGHT, CONSTANTS.COLOURS.WHITE);
-    $('[data-row_index="' + white_knight_2_index[0] + '"][data-col_index="' + white_knight_2_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(white_knight_2_index[0], white_knight_2_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.KNIGHT, CONSTANTS.COLOURS.BLACK);
-    $('[data-row_index="' + black_knight_2_index[0] + '"][data-col_index="' + black_knight_2_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(black_knight_2_index[0], black_knight_2_index[1])).append(piece);
     make_piece_draggable(piece);
 
     // Init Rooks
     piece = piece_factory(CONSTANTS.PIECES.ROOK, CONSTANTS.COLOURS.WHITE);
-    $('[data-row_index="' + white_rook_1_index[0] + '"][data-col_index="' + white_rook_1_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(white_rook_1_index[0], white_rook_1_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.ROOK, CONSTANTS.COLOURS.BLACK);
-    $('[data-row_index="' + black_rook_1_index[0] + '"][data-col_index="' + black_rook_1_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(black_rook_1_index[0], black_rook_1_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.ROOK, CONSTANTS.COLOURS.WHITE);
-    $('[data-row_index="' + white_rook_2_index[0] + '"][data-col_index="' + white_rook_2_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(white_rook_2_index[0], white_rook_2_index[1])).append(piece);
     make_piece_draggable(piece);
 
     piece = piece_factory(CONSTANTS.PIECES.ROOK, CONSTANTS.COLOURS.BLACK);
-    $('[data-row_index="' + black_rook_2_index[0] + '"][data-col_index="' + black_rook_2_index[1] + '"]').append(piece);
+    $(SQUARE.get_square_at(black_rook_2_index[0], black_rook_2_index[1])).append(piece);
     make_piece_draggable(piece);
 }
 
