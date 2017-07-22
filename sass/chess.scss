@@ -4,10 +4,31 @@ $black_square: #A88048;
 $chess_piece_font_url: "/fonts/cases/CASEFONT.TTF";
 
 $chess_square_dimen: 60px;
+$chess_square_dimen_mobile: 35px;
+
+$chess_piece_size: 40px;
+$chess_piece_size_mobile: 23px;
 
 @font-face {
     font-family: chess;
     src: url($chess_piece_font_url);
+}
+
+.logo {
+    float: left;
+    width: 35px;
+    margin-top: 5px;
+    margin-right: 5px;
+
+    float: left;
+    width: 40px;
+    margin-top: 5px;
+    margin-right: 5px;
+    border-radius: 50%;
+    border: solid 1px #aaa;
+    padding: 5px;
+    box-shadow: 1px 1px 1px #aaa;
+    background: #fff;
 }
 
 .chess_board {
@@ -44,7 +65,7 @@ $chess_square_dimen: 60px;
 
 .chess_piece {
     font-family: "chess";
-    font-size: 40px;
+    font-size: $chess_piece_size;
     display: inline-block;
 }
 
@@ -144,4 +165,16 @@ $chess_square_dimen: 60px;
 
 .colour_to_move {
     text-transform: capitalize;
+}
+
+// Mobile
+@media only screen and (max-width: 600px) {
+    .chess_square {
+        width: $chess_square_dimen_mobile;
+        height: $chess_square_dimen_mobile;
+    }
+
+    .chess_piece {
+        font-size: $chess_piece_size_mobile;
+    }
 }

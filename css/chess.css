@@ -1,6 +1,21 @@
 @font-face {
   font-family: chess;
   src: url("/fonts/cases/CASEFONT.TTF"); }
+.logo {
+  float: left;
+  width: 35px;
+  margin-top: 5px;
+  margin-right: 5px;
+  float: left;
+  width: 40px;
+  margin-top: 5px;
+  margin-right: 5px;
+  border-radius: 50%;
+  border: solid 1px #aaa;
+  padding: 5px;
+  box-shadow: 1px 1px 1px #aaa;
+  background: #fff; }
+
 .chess_board {
   display: inline-block;
   overflow: hidden;
@@ -100,5 +115,13 @@
 
 .colour_to_move {
   text-transform: capitalize; }
+
+@media only screen and (max-width: 600px) {
+  .chess_square {
+    width: 35px;
+    height: 35px; }
+
+  .chess_piece {
+    font-size: 23px; } }
 
 /*# sourceMappingURL=chess.css.map */
