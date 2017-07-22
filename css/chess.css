@@ -1,6 +1,10 @@
 @font-face {
   font-family: chess;
   src: url("/fonts/cases/CASEFONT.TTF"); }
+.chess_board {
+  display: block;
+  overflow: hidden; }
+
 .chess_row {
   clear: both; }
 

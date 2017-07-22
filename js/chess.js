@@ -1,6 +1,8 @@
 var CONSTANTS,
     DEBUG,
-    STATE;
+    STATE,
+    PIECE,
+    SQUARE;
 
 CONSTANTS = {
     COLOURS: {
@@ -26,7 +28,140 @@ DEBUG = {
 
 STATE = {
     is_piece_moving: false,
-    cur_colour: CONSTANTS.COLOURS.WHITE
+    cur_colour: CONSTANTS.COLOURS.WHITE,
+    update_current_colour: function (colour) {
+        STATE.cur_colour = colour;
+        $('.colour_to_move').text(colour);
+    },
+
+    captured: {
+        white: [],
+        black: []
+    },
+
+    add_captured_piece: function (colour, piece_type) {
+        STATE.captured[colour].push(piece_type);
+    },
+
+    clear_states: function () {
+        STATE.update_current_colour(CONSTANTS.COLOURS.WHITE);
+        STATE.captured.white = [];
+        STATE.captured.black = [];
+    }
+};
+
+PIECE = {
+    /**
+     * Returns the type of the piece for a given piece
+     * 
+     * @param {any} piece
+     * @returns 
+     */
+    get_piece_type: function (piece) {
+        return $(piece).data('piece_type');
+    },
+
+    /**
+     * Returns the position of the piece for a given piece
+     * 
+     * @param {any} piece
+     * @returns [row_index, col_index]
+     */
+    get_piece_position: function (piece) {
+        return [$(piece).data('row_index'), $(piece).data('col_index')];
+    },
+
+    /**
+     * Returns the colour of the piece for a given piece
+     * 
+     * @param {any} piece
+     * @returns 
+     */
+    get_piece_colour: function (piece) {
+        return $(piece).data('colour');
+    },
+
+    /**
+     * Returns if the given piece has moved at least once or not
+     * 
+     * @param {any} piece
+     * @returns 
+     */
+    has_moved: function (piece) {
+        return !!$(piece).data('has_moved');
+    }
+};
+
+SQUARE = {
+    /**
+     * Returns the square at the target position
+     * 
+     * @param {any} row_index 
+     * @param {any} col_index 
+     * @returns 
+     */
+    get_square_at: function (row_index, col_index) {
+        return $('[data-row_index="' + row_index + '"][data-col_index="' + col_index + '"]');
+    },
+
+    /**
+     * Returns the position of the square for a given square
+     * 
+     * @param {any} square
+     * @returns [row_index, col_index]
+     */
+    get_square_position: function (square) {
+        return [$(square).data('row_index'), $(square).data('col_index')];
+    },
+
+    /**
+     * Returns the piece at the target position
+     * If a piece does not exist, it returns undefined
+     * 
+     * @param {any} row_index 
+     * @param {any} col_index 
+     * @returns 
+     */
+    get_piece_at: function (row_index, col_index) {
+        var cur_piece = $(SQUARE.get_square_at(row_index, col_index)).find('.chess_piece');
+        return cur_piece;
+    },
+
+    /**
+     * Checks if there is a piece at the given co-ordinate
+     * Returns undefined if no piece is found
+     * Returns the colour the piece if a piece is found
+     * 
+     * @param {any} row_index 
+     * @param {any} col_index 
+     */
+    has_piece_at: function (row_index, col_index) {
+        var cur_piece = SQUARE.get_piece_at(row_index, col_index);
+        
+        if (noe(cur_piece)) {
+            return false;
+        }
+
+        return PIECE.get_piece_colour(cur_piece);
+    },
+
+    /**
+     * This function checks if an opponent piece exists in the target square
+     * If it does, it removes the piece
+     * 
+     * @param {any} row_index 
+     * @param {any} col_index 
+     */
+    kill_piece_at: function (row_index, col_index) {
+        var existing_piece_colour = SQUARE.has_piece_at(row_index, col_index),
+            existing_piece = SQUARE.get_piece_at(row_index, col_index);
+
+        // If piece exists and is of opposite colour
+        if (!noe(existing_piece_colour) && existing_piece_colour !== STATE.cur_colour) {
+            STATE.add_captured_piece(existing_piece_colour, PIECE.get_piece_type(existing_piece));
+            $(SQUARE.get_square_at(row_index, col_index)).find('.chess_piece').remove();
+        }
+    }
 };
 
 /**
@@ -66,6 +201,7 @@ function init_game() {
 function init_board() {
     draw_board();
     init_pieces();
+    STATE.clear_states();
 }
 
 /**
@@ -236,7 +372,7 @@ function make_piece_draggable(piece) {
     $(piece).on('mouseover', function () {
         if (STATE.is_piece_moving) { return false; }
 
-        var piece_type = $(piece).data('piece_type'),
+        var piece_type = PIECE.get_piece_type(piece),
             row_index = parseInt($(piece).closest('.chess_square').data('row_index')),
             col_index = parseInt($(piece).closest('.chess_square').data('col_index'));
         
@@ -289,14 +425,19 @@ function make_piece_draggable(piece) {
      * @param {any} col_index 
      */
     function make_pawn_draggable(piece, row_index, col_index) {
-        var has_moved = $(piece).data('has_moved'),
-            colour = $(piece).data('colour'),
+        var has_moved = PIECE.has_moved(piece),
+            colour = PIECE.get_piece_colour(piece),
             new_row_index = colour === CONSTANTS.COLOURS.WHITE ? row_index - 1 : row_index + 1,
             allowed_positions = [];
         
         allowed_positions = [
             [new_row_index, col_index]
         ];
+
+        if (!has_moved) {
+            new_row_index = colour === CONSTANTS.COLOURS.WHITE ? row_index - 2 : row_index + 2,
+            allowed_positions.push([new_row_index, col_index]);
+        }
 
         set_allowed_positions(allowed_positions, piece);
     }
@@ -333,13 +474,8 @@ function make_piece_draggable(piece) {
     function make_rook_draggable(piece, row_index, col_index) {
         var i,
             allowed_positions = [];
-        
-        for (i = 0; i < 8; i++) {
-            allowed_positions.push([row_index - i, col_index]);
-            allowed_positions.push([row_index + i, col_index]);
-            allowed_positions.push([row_index, col_index - i]);
-            allowed_positions.push([row_index, col_index + i]);
-        }
+
+        allowed_positions = get_vertical_allowed_positions(piece, row_index, col_index);
 
         set_allowed_positions(allowed_positions, piece);
     }
@@ -355,12 +491,14 @@ function make_piece_draggable(piece) {
         var i, j,
             allowed_positions = [];
 
-        for (i = 1; i < 8; i++) {
-            allowed_positions.push([row_index - i, col_index - i]);
-            allowed_positions.push([row_index - i, col_index + i]);
-            allowed_positions.push([row_index + i, col_index - i]);
-            allowed_positions.push([row_index + i, col_index + i]);
-        }
+        // for (i = 1; i < 8; i++) {
+        //     allowed_positions.push([row_index - i, col_index - i]);
+        //     allowed_positions.push([row_index - i, col_index + i]);
+        //     allowed_positions.push([row_index + i, col_index - i]);
+        //     allowed_positions.push([row_index + i, col_index + i]);
+        // }
+
+        allowed_positions = get_diagonal_allowed_positions(piece, row_index, col_index);
 
         set_allowed_positions(allowed_positions, piece);
     }
@@ -374,23 +512,27 @@ function make_piece_draggable(piece) {
      */
     function make_queen_draggable(piece, row_index, col_index) {
         var i, j,
-            allowed_positions = []
+            allowed_positions = [],
+            cur_colour = PIECE.get_piece_colour(piece),
+            cur_piece_position = [],
+            piece_at_position,
+            can_go = {
+                up: true,
+                down: true,
+                left: true,
+                right: true
+            };
+        
+        cur_piece_position = PIECE.get_piece_position(piece);
 
-        // Slant
-        for (i = 1; i < 8; i++) {
-            allowed_positions.push([row_index - i, col_index - i]);
-            allowed_positions.push([row_index - i, col_index + i]);
-            allowed_positions.push([row_index + i, col_index - i]);
-            allowed_positions.push([row_index + i, col_index + i]);
-        }
+        // Diagonal
+        allowed_positions = get_diagonal_allowed_positions(piece, row_index, col_index);
         
         // Vertical
-        for (i = 0; i < 8; i++) {
-            allowed_positions.push([row_index - i, col_index]);
-            allowed_positions.push([row_index + i, col_index]);
-            allowed_positions.push([row_index, col_index - i]);
-            allowed_positions.push([row_index, col_index + i]);
-        }
+        allowed_positions = allowed_positions.concat(
+                                get_vertical_allowed_positions(piece, row_index, col_index)
+                            );
+
 
         set_allowed_positions(allowed_positions, piece);
     }
@@ -431,7 +573,7 @@ function make_piece_draggable(piece) {
          * Check if the current piece is the same colour
          * If it is the same, we do not set any allowed positions
          */
-        if ($(piece).data('colour') !== STATE.cur_colour) {
+        if (PIECE.get_piece_colour(piece) !== STATE.cur_colour) {
             return false;
         }
 
@@ -442,7 +584,7 @@ function make_piece_draggable(piece) {
                 Check if the allowed position has a piece of the same colour 
             */
             existing_chess_piece = $(target_position).find('.chess_piece');
-            if (!noe(existing_chess_piece) && $(existing_chess_piece).data('colour') === STATE.cur_colour) {
+            if (!noe(existing_chess_piece) && PIECE.get_piece_colour(existing_chess_piece) === STATE.cur_colour) {
                 return true;
             }
 
@@ -451,11 +593,24 @@ function make_piece_draggable(piece) {
                 droppable({
                     activeClass: 'allowed_position',
                     drop: function (event, ui) {
-                        var new_piece = clone_piece($(ui.draggable));
-                        $(ui.draggable).remove();
-                        $(this).append(new_piece);
+                        // ondrop on drop
 
-                        STATE.cur_colour = STATE.cur_colour === CONSTANTS.COLOURS.WHITE ? CONSTANTS.COLOURS.BLACK : CONSTANTS.COLOURS.WHITE;
+                        var new_piece = clone_piece($(ui.draggable)),
+                            square = $(this),
+                            dropped_chess_piece = $(ui.draggable),
+                            square_position = SQUARE.get_square_position(square);
+
+                        // Kill the piece at position if appropriate
+                        SQUARE.kill_piece_at(square_position[0], square_position[1]);
+
+                        // Remove the piece that we just moved/dropped
+                        // Add the cloned piece and appropriate bindings
+                        $(dropped_chess_piece).remove();
+                        $(square).append(new_piece);
+                        $(new_piece).data('has_moved', true);
+                        make_piece_draggable($(new_piece));
+
+                        STATE.update_current_colour(STATE.cur_colour === CONSTANTS.COLOURS.WHITE ? CONSTANTS.COLOURS.BLACK : CONSTANTS.COLOURS.WHITE);
                     }
                 });
         });
@@ -473,8 +628,8 @@ function make_piece_draggable(piece) {
  * @returns 
  */
 function clone_piece(piece) {
-    var piece_type = $(piece).data('piece_type'),
-        colour = $(piece).data('colour');
+    var piece_type = PIECE.get_piece_type(piece),
+        colour = PIECE.get_piece_colour(piece);
 
     return piece_factory(piece_type, colour);
 }
@@ -501,6 +656,194 @@ function remove_all_droppable() {
             
         }
     }
+}
+
+/**
+ * Gets a set of allowed positions for vertical movements
+ * This can be used by Rooks and vertical movements for Queens
+ * 
+ * @param {any} piece 
+ * @param {any} row_index 
+ * @param {any} col_index 
+ * @returns 
+ */
+function get_vertical_allowed_positions(piece, row_index, col_index) {
+    var i,
+        allowed_positions = [],
+        colour_at_position,
+        can_go = {
+            up: true,
+            down: true,
+            left: true,
+            right: true
+        };
+
+    for (i = 1; i < 8; i++) {
+        if (can_go.up) {
+            colour_at_position = SQUARE.has_piece_at(row_index - i, col_index);
+
+            // If the piece at the position is same colour as current piece
+            if (colour_at_position === STATE.cur_colour) {
+                can_go.up = false;
+                continue;
+            }
+
+            // If the piece at the position is opposite colour as current piece
+            if (!noe(colour_at_position)) {
+                can_go.up = false;
+            }
+
+            allowed_positions.push([row_index - i, col_index]);
+        }
+
+        if (can_go.down) {
+            colour_at_position = SQUARE.has_piece_at(row_index + i, col_index);
+            
+            // If the piece at the position is same colour as current piece
+            if (colour_at_position === STATE.cur_colour) {
+                can_go.down = false;
+                continue;
+            }
+
+            // If the piece at the position is opposite colour as current piece
+            if (!noe(colour_at_position)) {
+                can_go.down = false;
+            }
+
+            allowed_positions.push([row_index + i, col_index]);
+        }
+
+        if (can_go.left) {
+            colour_at_position = SQUARE.has_piece_at(row_index, col_index - i);
+            
+            // If the piece at the position is same colour as current piece
+            if (colour_at_position === STATE.cur_colour) {
+                can_go.left = false;
+                continue;
+            }
+
+            // If the piece at the position is opposite colour as current piece
+            if (!noe(colour_at_position)) {
+                can_go.left = false;
+            }
+
+            allowed_positions.push([row_index, col_index - i]);
+        }
+
+        if (can_go.right) {
+            colour_at_position = SQUARE.has_piece_at(row_index, col_index + i);
+            
+            // If the piece at the position is same colour as current piece
+            if (colour_at_position === STATE.cur_colour) {
+                can_go.right = false;
+                continue;
+            }
+
+            // If the piece at the position is opposite colour as current piece
+            if (!noe(colour_at_position)) {
+                can_go.right = false;
+            }
+
+            allowed_positions.push([row_index, col_index + i]);
+        }
+
+    }
+
+    return allowed_positions;
+}
+
+/**
+ * Gets a set of allowed positions for diagonal movements
+ * This can be used by Bishops and diagonal movements for Queens
+ * 
+ * @param {any} piece 
+ * @param {any} row_index 
+ * @param {any} col_index 
+ * @returns 
+ */
+function get_diagonal_allowed_positions(piece, row_index, col_index) {
+    var i,
+        allowed_positions = [],
+        colour_at_position,
+        can_go = {
+            up: true,
+            down: true,
+            left: true,
+            right: true
+        };
+
+    for (i = 1; i < 8; i++) {
+        if (can_go.up) {
+            colour_at_position = SQUARE.has_piece_at(row_index - i, col_index - i);
+
+            // If the piece at the position is same colour as current piece
+            if (colour_at_position === STATE.cur_colour) {
+                can_go.up = false;
+                continue;
+            }
+
+            // If the piece at the position is opposite colour as current piece
+            if (!noe(colour_at_position)) {
+                can_go.up = false;
+            }
+
+            allowed_positions.push([row_index - i, col_index - i]);
+        }
+
+        if (can_go.down) {
+            colour_at_position = SQUARE.has_piece_at(row_index + i, col_index + i);
+            
+            // If the piece at the position is same colour as current piece
+            if (colour_at_position === STATE.cur_colour) {
+                can_go.down = false;
+                continue;
+            }
+
+            // If the piece at the position is opposite colour as current piece
+            if (!noe(colour_at_position)) {
+                can_go.down = false;
+            }
+
+            allowed_positions.push([row_index + i, col_index + i]);
+        }
+
+        if (can_go.left) {
+            colour_at_position = SQUARE.has_piece_at(row_index - i, col_index + i);
+            
+            // If the piece at the position is same colour as current piece
+            if (colour_at_position === STATE.cur_colour) {
+                can_go.left = false;
+                continue;
+            }
+
+            // If the piece at the position is opposite colour as current piece
+            if (!noe(colour_at_position)) {
+                can_go.left = false;
+            }
+
+            allowed_positions.push([row_index - i, col_index + i]);
+        }
+
+        if (can_go.right) {
+            colour_at_position = SQUARE.has_piece_at(row_index + i, col_index - i);
+            
+            // If the piece at the position is same colour as current piece
+            if (colour_at_position === STATE.cur_colour) {
+                can_go.right = false;
+                continue;
+            }
+
+            // If the piece at the position is opposite colour as current piece
+            if (!noe(colour_at_position)) {
+                can_go.right = false;
+            }
+
+            allowed_positions.push([row_index + i, col_index - i]);
+        }
+
+    }
+
+    return allowed_positions;
 }
 
 /**

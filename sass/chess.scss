@@ -10,6 +10,11 @@ $chess_square_dimen: 60px;
     src: url($chess_piece_font_url);
 }
 
+.chess_board {
+    display: block;
+    overflow: hidden;
+}
+
 .chess_row {
     clear: both;
 }
