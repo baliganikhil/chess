@@ -41,6 +41,7 @@ STATE = {
 
     add_captured_piece: function (colour, piece_type) {
         STATE.captured[colour].push(piece_type);
+        $('.pieces_lost .' + colour).append(piece_factory(piece_type, colour));
     },
 
     clear_states: function () {
@@ -161,6 +162,17 @@ SQUARE = {
             STATE.add_captured_piece(existing_piece_colour, PIECE.get_piece_type(existing_piece));
             $(SQUARE.get_square_at(row_index, col_index)).find('.chess_piece').remove();
         }
+    },
+
+    /**
+     * Check if the target square contains an opponent
+     * 
+     * @param {any} row_index
+     * @param {any} col_index
+     */
+    contains_opponent_at: function (row_index, col_index) {
+        var colour_at_position = PIECE.get_piece_colour(SQUARE.get_piece_at(row_index, col_index));
+        return !noe(colour_at_position) && (colour_at_position !== STATE.cur_colour);
     }
 };
 
@@ -430,9 +442,18 @@ function make_piece_draggable(piece) {
             new_row_index = colour === CONSTANTS.COLOURS.WHITE ? row_index - 1 : row_index + 1,
             allowed_positions = [];
         
-        allowed_positions = [
-            [new_row_index, col_index]
-        ];
+        if (!SQUARE.has_piece_at(new_row_index, col_index)) {
+            allowed_positions.push([new_row_index, col_index]);
+        }
+
+        if (SQUARE.contains_opponent_at(new_row_index, col_index + 1)) {
+            allowed_positions.push([new_row_index, col_index + 1]);
+        }
+
+        if (SQUARE.contains_opponent_at(new_row_index, col_index - 1)) {
+            allowed_positions.push([new_row_index, col_index - 1]);
+        }
+
 
         if (!has_moved) {
             new_row_index = colour === CONSTANTS.COLOURS.WHITE ? row_index - 2 : row_index + 2,
@@ -490,13 +511,6 @@ function make_piece_draggable(piece) {
     function make_bishop_draggable(piece, row_index, col_index) {
         var i, j,
             allowed_positions = [];
-
-        // for (i = 1; i < 8; i++) {
-        //     allowed_positions.push([row_index - i, col_index - i]);
-        //     allowed_positions.push([row_index - i, col_index + i]);
-        //     allowed_positions.push([row_index + i, col_index - i]);
-        //     allowed_positions.push([row_index + i, col_index + i]);
-        // }
 
         allowed_positions = get_diagonal_allowed_positions(piece, row_index, col_index);
 
@@ -836,6 +850,38 @@ function get_diagonal_allowed_positions(piece, row_index, col_index) {
     }
 
     return allowed_positions;
+}
+
+function is_king_under_check(colour, row_index, col_index) {
+    var king_piece = SQUARE.get_piece_at(row_index, col_index),
+        vertical_positions,
+        diagonal_positions,
+        piece,
+        piece_type,
+        under_check = false;
+    
+    vertical_positions = get_vertical_allowed_positions(piece, row_index, col_index);
+    diagonal_positions = get_diagonal_allowed_positions(piece, row_index, col_index);
+
+    vertical_positions.forEach(function (v_pos) {
+        piece = SQUARE.get_piece_at(v_pos[0], v_pos[1]);
+        piece_type = PIECE.get_piece_type(piece);
+
+        if (piece_type === CONSTANTS.PIECES.ROOK || piece_type === CONSTANTS.PIECES.QUEEN) {
+            under_check = true;
+        }
+    });
+
+    diagonal_positions.forEach(function (d_pos) {
+        piece = SQUARE.get_piece_at(d_pos[0], d_pos[1]);
+        piece_type = PIECE.get_piece_type(piece);
+
+        if (piece_type === CONSTANTS.PIECES.BISHOP || piece_type === CONSTANTS.PIECES.QUEEN) {
+            under_check = true;
+        }
+    });
+
+    return under_check;
 }
 
 /**

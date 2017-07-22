@@ -13,6 +13,7 @@ $chess_square_dimen: 60px;
 .chess_board {
     display: block;
     overflow: hidden;
+    margin-bottom: 10px;
 }
 
 .chess_row {
@@ -23,7 +24,6 @@ $chess_square_dimen: 60px;
     border: solid 1px #eee;
     height: $chess_square_dimen;
     width: $chess_square_dimen;
-    display: inline-block;
     text-align: center;
     float: left;
 }
@@ -40,7 +40,6 @@ $chess_square_dimen: 60px;
     font-family: "chess";
     font-size: 40px;
     display: inline-block;
-    margin-top: 8px;
 }
 
 .white_pawn:before {
@@ -108,4 +107,23 @@ $chess_square_dimen: 60px;
         outline: none;
         cursor: pointer;
     }
+}
+
+.pieces_lost {
+    border: solid 1px;
+
+    .white {
+        background: #fafafa;
+        padding-bottom: 10px;
+        border-bottom: solid 1px #eee;
+    }
+
+    .black {
+        padding-bottom: 10px;
+        padding-top: 5px;
+    }
+}
+
+.colour_to_move {
+    text-transform: capitalize;
 }
