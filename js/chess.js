@@ -2,7 +2,8 @@ var CONSTANTS,
     DEBUG,
     STATE,
     PIECE,
-    SQUARE;
+    SQUARE,
+    MOVES;
 
 CONSTANTS = {
     COLOURS: {
@@ -17,6 +18,11 @@ CONSTANTS = {
         QUEEN: 'queen',
         KING: 'king',
         PAWN: 'pawn'
+    },
+
+    STATE_FORMAT: {
+        FEN: 'fen',
+        PGN: 'pgn'
     }
 };
 
@@ -29,6 +35,13 @@ DEBUG = {
 STATE = {
     is_piece_moving: false,
     cur_colour: CONSTANTS.COLOURS.WHITE,
+
+    /**
+     * Updates the current colour
+     * 
+     * @param {any} colour
+     * @returns 
+     */
     update_current_colour: function (colour) {
         STATE.cur_colour = colour;
         $('.colour_to_move').text(colour);
@@ -39,6 +52,13 @@ STATE = {
         black: []
     },
 
+    /**
+     * Add piece to list of captured pieces
+     * 
+     * @param {any} colour
+     * @param {any} piece_type
+     * @returns 
+     */
     add_captured_piece: function (colour, piece_type) {
         var container = '.pieces_lost .' + colour;
 
@@ -50,10 +70,69 @@ STATE = {
         $(container).append(piece_factory(piece_type, colour));
     },
 
+    /**
+     * Clear states to prepare to reset board
+     * 
+     * @returns 
+     */
     clear_states: function () {
         STATE.update_current_colour(CONSTANTS.COLOURS.WHITE);
         STATE.captured.white = [];
         STATE.captured.black = [];
+        STATE.history = [];
+    },
+
+    history_mode: CONSTANTS.STATE_FORMAT.FEN,
+    history: [],
+    
+    /**
+     * Add the state of board to history
+     * 
+     * @returns 
+     */
+    add_to_history: function () {
+        var board_in_fen;
+
+        if (STATE.history_mode === CONSTANTS.STATE_FORMAT.FEN) {
+            board_in_fen = MOVES.board_to_fen();
+            STATE.history.push(board_in_fen);
+        }
+    },
+
+    /**
+     * Undo last move
+     * 
+     * @returns 
+     */
+    undo: function () {
+        var board_in_fen;
+
+        if (STATE.history_mode === CONSTANTS.STATE_FORMAT.FEN) {
+            STATE.history.splice(STATE.history.length - 1);
+            board_in_fen = STATE.history[STATE.history.length - 1]
+
+            if (!noe(board_in_fen)) {
+                MOVES.fen_to_board(board_in_fen);
+            } else {
+                draw_board();
+                init_pieces();
+            }
+
+            STATE.show_undo_button();
+        }
+    },
+
+    /**
+     * Shows or hides the undo button as appropriate
+     * 
+     * @returns 
+     */
+    show_undo_button: function () {
+        if (STATE.history.length === 0) {
+            $('.undo').hide();
+        } else {
+            $('.undo').show();
+        }
     }
 };
 
@@ -207,6 +286,10 @@ function init_game() {
         $('.new_game').on('click', function () {
             init_board();
         });
+
+        $('.undo').on('click', function () {
+            STATE.undo();
+        });
     })();
     
     init_board();
@@ -223,6 +306,8 @@ function init_board() {
 
     $('.pieces_lost .chess_piece').remove();
     $('.lbl_no_pieces_lost').show();
+
+    STATE.show_undo_button();
 }
 
 /**
@@ -253,6 +338,199 @@ function draw_board() {
         cur_colour = invert_colour(cur_colour);
     }
 }
+
+MOVES = {
+    /**
+     * Translates fen format to an actual board position
+     * 
+     * @param {any} fen 
+     * @returns
+     */
+    fen_to_board: function (fen) {
+        var moves,
+            square,
+            colour,
+            piece_type,
+            piece,
+            expanded_move_row,
+            j, t, k;
+
+        draw_board();
+
+        fen = fen.split(' ');
+        moves = fen[0].split('/');
+
+        moves.forEach(function (move_row, i) {
+            move_row = move_row.split('');
+            expanded_move_row = [];
+
+            // Expand number to individual spaces
+            move_row.forEach(function (j) {
+                t = parseInt(j);
+                if (isNaN(t)) {
+                    expanded_move_row.push(j)
+                } else {
+                    for (k = 0; k < t; k++) {
+                        expanded_move_row.push(undefined);
+                    }
+                }
+            });
+
+            for (j = 0; j < expanded_move_row.length; j++) {
+                square = SQUARE.get_square_at(i, j);
+                piece_code = expanded_move_row[j];
+
+                switch(piece_code) {
+                    case 'P':
+                        piece_type = CONSTANTS.PIECES.PAWN;
+                        piece_colour = CONSTANTS.COLOURS.WHITE;
+                        break;
+                    
+                    case 'p':
+                        piece_type = CONSTANTS.PIECES.PAWN;
+                        piece_colour = CONSTANTS.COLOURS.BLACK;
+                        break;
+                    
+                    case 'R':
+                        piece_type = CONSTANTS.PIECES.ROOK;
+                        piece_colour = CONSTANTS.COLOURS.WHITE;
+                        break;
+                    
+                    case 'r':
+                        piece_type = CONSTANTS.PIECES.ROOK;
+                        piece_colour = CONSTANTS.COLOURS.BLACK;
+                        break;
+                    
+                    case 'N':
+                        piece_type = CONSTANTS.PIECES.KNIGHT;
+                        piece_colour = CONSTANTS.COLOURS.WHITE;
+                        break;
+                    
+                    case 'n':
+                        piece_type = CONSTANTS.PIECES.KNIGHT;
+                        piece_colour = CONSTANTS.COLOURS.BLACK;
+                        break;
+                    
+                    case 'B':
+                        piece_type = CONSTANTS.PIECES.BISHOP;
+                        piece_colour = CONSTANTS.COLOURS.WHITE;
+                        break;
+                    
+                    case 'b':
+                        piece_type = CONSTANTS.PIECES.BISHOP;
+                        piece_colour = CONSTANTS.COLOURS.BLACK;
+                        break;
+                    
+                    case 'Q':
+                        piece_type = CONSTANTS.PIECES.QUEEN;
+                        piece_colour = CONSTANTS.COLOURS.WHITE;
+                        break;
+                    
+                    case 'q':
+                        piece_type = CONSTANTS.PIECES.QUEEN;
+                        piece_colour = CONSTANTS.COLOURS.BLACK;
+                        break;
+                    
+                    case 'K':
+                        piece_type = CONSTANTS.PIECES.KING;
+                        piece_colour = CONSTANTS.COLOURS.WHITE;
+                        break;
+                    
+                    case 'k':
+                        piece_type = CONSTANTS.PIECES.KING;
+                        piece_colour = CONSTANTS.COLOURS.BLACK;
+                        break;
+                    
+                    default:
+                        piece_type = undefined;
+                }
+
+                if (!noe(piece_type)) {
+                    piece = piece_factory(piece_type, piece_colour);
+                    $(square).append(piece);
+                }
+            }
+        });
+    },
+
+    /**
+     * Translates pieces and board position into fen format
+     * 
+     * Refer:
+     * https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
+     *  
+     * @returns fen format
+     */
+    board_to_fen: function () {
+        var fen_format = [],
+            row,
+            piece,
+            piece_type,
+            piece_colour,
+            fen_char,
+            space_ctr,
+            i, j;
+        
+        for (i = 0; i < 8; i++) {
+            row = [];
+            space_ctr = 0;
+
+            for (j = 0; j < 8; j++) {
+                piece = SQUARE.get_piece_at(i, j);
+                piece_type = PIECE.get_piece_type(piece);
+                piece_colour = PIECE.get_piece_colour(piece);
+
+                switch (piece_type) {
+                    case CONSTANTS.PIECES.PAWN:
+                        fen_char = piece_colour === CONSTANTS.COLOURS.WHITE ? 'P' : 'p';
+                        break;
+
+                    case CONSTANTS.PIECES.ROOK:
+                        fen_char = piece_colour === CONSTANTS.COLOURS.WHITE ? 'R' : 'r';
+                        break;
+
+                    case CONSTANTS.PIECES.KNIGHT:
+                        fen_char = piece_colour === CONSTANTS.COLOURS.WHITE ? 'N' : 'n';
+                        break;
+
+                    case CONSTANTS.PIECES.BISHOP:
+                        fen_char = piece_colour === CONSTANTS.COLOURS.WHITE ? 'B' : 'b';
+                        break;
+
+                    case CONSTANTS.PIECES.QUEEN:
+                        fen_char = piece_colour === CONSTANTS.COLOURS.WHITE ? 'Q' : 'q';
+                        break;
+
+                    case CONSTANTS.PIECES.KING:
+                        fen_char = piece_colour === CONSTANTS.COLOURS.WHITE ? 'K' : 'k';
+                        break;
+                    
+                    default:
+                        fen_char = undefined;
+                        space_ctr += 1;
+                }
+
+                if (!noe(fen_char)) {
+                    if (space_ctr !== 0) {
+                        row.push(space_ctr);
+                        space_ctr = 0;
+                    }
+                    
+                    row.push(fen_char);
+                } else if (j === 7) {
+                    row.push(space_ctr);
+                    space_ctr = 0;
+                }
+            }
+
+            fen_format.push(row.join(''));
+        }
+
+        fen_format = fen_format.join('/');
+
+        return fen_format;
+    }
+};
 
 /**
  * Utility function that checks if colour is black or white
@@ -634,6 +912,9 @@ function make_piece_draggable(piece) {
                         make_piece_draggable($(new_piece));
 
                         STATE.update_current_colour(STATE.cur_colour === CONSTANTS.COLOURS.WHITE ? CONSTANTS.COLOURS.BLACK : CONSTANTS.COLOURS.WHITE);
+
+                        STATE.add_to_history();
+                        STATE.show_undo_button();
                     }
                 });
         });
